@@ -3,10 +3,11 @@
 </template>
 
 <script setup lang="ts">
+import { Canvas, FabricText, FabricObject, loadSVGFromURL, Group } from 'fabric';
 
+const scaleConfig = ref(0.1)
 const windowWidth = ref<number>(0);
 const windowHeight = ref<number>(0);
-import { Canvas, FabricImage, FabricText, FabricObject } from 'fabric';
 // 定义一个函数来更新窗口尺寸
 const updateWindowSize = () => {
   windowWidth.value = window.innerWidth;
@@ -45,15 +46,15 @@ onMounted(async () => {
     });
     fabricCanvas.add(bottomText);
 
-    const topLeftImage: FabricImage = await renderTopLeftImage(fabricCanvas)
-    const topRightImage: FabricImage = await renderTopRightImage(fabricCanvas)
+    const topLeftSvg = await renderTopLeftImage(fabricCanvas)
 
+    renderTopRightSvg(fabricCanvas)
     //event 
     fabricCanvas.on('object:moving', (e) => {
       const target = e.target;
-      if (target === topLeftImage) {
+      if (target === topLeftSvg) {
         // 检查图片是否拖动到文本上方
-        if (checkOverlap(topLeftImage, bottomText)) {
+        if (checkOverlap(topLeftSvg, bottomText)) {
           bottomText.set('text', '--🫳松手跳转到About--')
         } else {
           bottomText.set('text', '将任何人物拖拽到此处');
@@ -65,8 +66,8 @@ onMounted(async () => {
     fabricCanvas.on('object:modified', (e) => {
       const target = e.target;
       // topImage about
-      if (target === topLeftImage) {
-        if (checkOverlap(topLeftImage, bottomText)) {
+      if (target === topLeftSvg) {
+        if (checkOverlap(topLeftSvg, bottomText)) {
           console.log('图片成功放置在文本上方');
         }
       }
@@ -75,42 +76,41 @@ onMounted(async () => {
 })
 
 const renderTopLeftImage = async (fabricCanvas: Canvas) => {
-  const topImage = await FabricImage.fromURL('/images/walking-contradiction.png', {
-    crossOrigin: 'anonymous' // 如果需要跨域
-  })
-  topImage.scale(0.08)
-  topImage.set({
-    left: -20,
+  const topSvg = await loadSVGFromURL('/svg/Ecto-Plasma.svg')
+  const objects = topSvg.objects.filter((obj): obj is FabricObject => obj !== null);
+  const options = topSvg.options; // 提取选项
+  const svgGroup = new Group(objects, options);
+  svgGroup.set({
+    left: windowWidth.value - options.width * 0.09 + 20, // 靠右对齐
     top: 0,
+    scaleX: scaleConfig.value, // 水平缩放
+    scaleY: scaleConfig.value  // 垂直缩放
   });
-  topImage.on('mousedown', () => {
-    topImage.set('flipX', true);
+  svgGroup.on('mousedown', () => {
+    svgGroup.set('flipX', true);
   })
-  topImage.on('mouseup', () => {
-    topImage.set('flipX', false);
+  svgGroup.on('mouseup', () => {
+    svgGroup.set('flipX', false);
   })
-  fabricCanvas.add(topImage)
-  return topImage
+  fabricCanvas.add(svgGroup);
+  return svgGroup
+}
+const renderTopRightSvg = async (fabricCanvas: Canvas) => {
+  const topSvg = await loadSVGFromURL('/svg/Pacheco.svg')
+  const objects = topSvg.objects.filter((obj): obj is FabricObject => obj !== null);
+  const options = topSvg.options; // 提取选项
+  const svgGroup = new Group(objects, options);
+  svgGroup.set({
+    left: 100, // 设置左侧位置
+    top: 100,  // 设置顶部位置
+    scaleX: scaleConfig.value, // 水平缩放
+    scaleY: scaleConfig.value  // 垂直缩放
+  });
+
+  fabricCanvas.add(svgGroup);
+  return svgGroup
 }
 
-const renderTopRightImage = async (fabricCanvas: Canvas) => {
-  const topImage = await FabricImage.fromURL('/images/ecto-plasma.png', {
-    crossOrigin: 'anonymous' // 如果需要跨域
-  })
-  topImage.scale(0.08)
-  topImage.set({
-    left: windowWidth.value - topImage.width * 0.08, // 靠右对齐
-    top: 0,
-  });
-  topImage.on('mousedown', () => {
-    topImage.set('flipX', true);
-  })
-  topImage.on('mouseup', () => {
-    topImage.set('flipX', false);
-  })
-  fabricCanvas.add(topImage)
-  return topImage
-}
 
 // 碰撞检测函数：检查图片是否与文本重叠
 const checkOverlap = (image: FabricObject, text: FabricObject) => {
