@@ -54,7 +54,7 @@ onMounted(async () => {
       if (target === topLeftImage) {
         // 检查图片是否拖动到文本上方
         if (checkOverlap(topLeftImage, bottomText)) {
-          bottomText.set('text', '--松手跳转到About--')
+          bottomText.set('text', '--🫳松手跳转到About--')
         } else {
           bottomText.set('text', '将任何人物拖拽到此处');
         }
