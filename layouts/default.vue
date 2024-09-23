@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="w-auto h-auto">
     <slot />
     <SpeedInsights />
   </div>
@@ -9,9 +9,4 @@
 import { SpeedInsights } from "@vercel/speed-insights/nuxt"
 </script>
 
-<style scoped>
-.home {
-  width: 100vw;
-  height: 100vh;
-}
-</style>
+<style scoped></style>
