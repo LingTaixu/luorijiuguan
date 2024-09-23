@@ -26,11 +26,15 @@ onMounted(async () => {
       width: windowWidth.value,
       height: windowHeight.value,
     })
+    await backgroundRender(fabricCanvas)
+
 
     // init 
-    backgroundRender(fabricCanvas)
     const { backgroundGif, transparentRect } = await renderGif('/images/2ff4e5128de882090260441b04f92de4.gif', fabricCanvas)
     const MimiFunction: FabricImage = await renderMimi(fabricCanvas)
+
+
+
     //event 
     fabricCanvas.on('object:moving', (e) => {
       const target = e.target;
@@ -67,6 +71,7 @@ const renderMimi = async (fabricCanvas: Canvas) => {
   })
   mimi.scale(0.1)
   fabricCanvas.add(mimi)
+  fabricCanvas.renderAll()
   return mimi
 }
 
